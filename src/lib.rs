@@ -1,5 +1,7 @@
 mod vtf;
-mod structs;
+mod header;
+mod image;
+mod utils;
 
 use vtf::VTF;
 use std::io::{Error};
