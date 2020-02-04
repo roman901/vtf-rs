@@ -8,4 +8,4 @@ repository = "https://github.com/roman901/vtf-rs"
 edition = "2018"
 
 [dependencies]
-image = "0.19.0"
+image = "0.22.4"
