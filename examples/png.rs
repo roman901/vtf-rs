@@ -1,8 +1,4 @@
-extern crate image;
-extern crate vtf;
-
 use image::dxt::{DXTDecoder, DXTVariant};
-use image::DecodingResult::U8;
 use image::DynamicImage;
 use image::ImageBuffer;
 use image::ImageDecoder;
@@ -33,23 +29,17 @@ fn main() -> std::io::Result<()> {
         vtf.highres_image.height as u32,
         DXTVariant::DXT1,
     )
-    .unwrap();
+        .unwrap();
     let buf = dxt_decoder.read_image().unwrap();
 
-    let image = match buf {
-        U8(buf) => Some(
-            ImageBuffer::from_raw(
-                vtf.highres_image.width as u32,
-                vtf.highres_image.height as u32,
-                buf,
-            )
-            .map(DynamicImage::ImageRgb8)
-            .unwrap(),
-        ),
-        _ => None,
-    };
-    let img = image.unwrap();
+    let image = ImageBuffer::from_raw(
+        vtf.highres_image.width as u32,
+        vtf.highres_image.height as u32,
+        buf,
+    )
+        .map(DynamicImage::ImageRgb8)
+        .unwrap();
 
-    img.save(&args[2])?;
+    image.save(&args[2])?;
     Ok(())
 }
