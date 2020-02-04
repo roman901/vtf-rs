@@ -9,27 +9,35 @@ pub struct VTFImage<'a> {
     pub format: ImageFormat,
     pub width: u16,
     pub height: u16,
-    bytes: &'a Vec<u8>
+    bytes: &'a Vec<u8>,
 }
 
 impl<'a> VTFImage<'a> {
-    pub fn new(header: VTFHeader, format: ImageFormat, width: u16, height: u16, bytes: &'a Vec<u8>) -> VTFImage<'a> {
+    pub fn new(
+        header: VTFHeader,
+        format: ImageFormat,
+        width: u16,
+        height: u16,
+        bytes: &'a Vec<u8>,
+    ) -> VTFImage<'a> {
         VTFImage {
             header,
             format,
             width,
             height,
-            bytes
+            bytes,
         }
     }
 
     pub fn get_frame(&self, frame: u32) -> Vec<u8> {
-        let frame_size = self.format.frame_size(self.width as u32, self.height as u32) as usize;
+        let frame_size = self
+            .format
+            .frame_size(self.width as u32, self.height as u32) as usize;
         let fulldata = get_offset(&self.header, &self.format, 0, 0, 0, -1) as usize;
-        let base: usize = self.bytes.len() - fulldata + get_offset(&self.header, &self.format, frame, 0, 0, 0) as usize;
-        self.bytes[base..base+frame_size].to_vec()
+        let base: usize = self.bytes.len() - fulldata
+            + get_offset(&self.header, &self.format, frame, 0, 0, 0) as usize;
+        self.bytes[base..base + frame_size].to_vec()
     }
-
 }
 
 #[derive(Debug)]
@@ -61,7 +69,7 @@ pub enum ImageFormat {
     Uvwq8888,
     Rgba16161616f,
     Rgba16161616,
-    Uvlx8888
+    Uvlx8888,
 }
 
 impl ImageFormat {
@@ -72,7 +80,7 @@ impl ImageFormat {
             13 => ImageFormat::Dxt1,
             14 => ImageFormat::Dxt3,
             15 => ImageFormat::Dxt5,
-            _ => panic!("ImageFormat {} not supported", num)
+            _ => panic!("ImageFormat {} not supported", num),
         }
     }
 
@@ -89,11 +97,11 @@ impl ImageFormat {
             ImageFormat::A8 => width * height,
             ImageFormat::Argb8888 => width * height * 4,
             ImageFormat::Bgra8888 => width * height * 4,
-            ImageFormat::Dxt1 => ((width+3)/4) * ((height+3)/4) * 8,
-            ImageFormat::Dxt5 => ((width+3)/4) * ((height+3)/4) * 16,
+            ImageFormat::Dxt1 => ((width + 3) / 4) * ((height + 3) / 4) * 8,
+            ImageFormat::Dxt5 => ((width + 3) / 4) * ((height + 3) / 4) * 16,
             ImageFormat::Rgba16161616f => width * height * 8,
             ImageFormat::Rgba16161616 => width * height * 8,
-            _ => panic!("ImageFormat {:?} not supported", self)
+            _ => panic!("ImageFormat {:?} not supported", self),
         }
     }
 }

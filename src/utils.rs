@@ -1,10 +1,17 @@
 use header::VTFHeader;
 use image::ImageFormat;
 
-pub fn get_offset(header: &VTFHeader, image_format: &ImageFormat, frame: u32, face: u32, slice: u32, mip_level: i32) -> u32 {
+pub fn get_offset(
+    header: &VTFHeader,
+    image_format: &ImageFormat,
+    frame: u32,
+    face: u32,
+    slice: u32,
+    mip_level: i32,
+) -> u32 {
     let mut offset: u32 = 0;
 
-    for i in (mip_level+1..(header.mipmap_count) as i32).rev() {
+    for i in (mip_level + 1..(header.mipmap_count) as i32).rev() {
         offset += get_mip_size(header, image_format, i as u32, header.depth);
     }
 
@@ -19,7 +26,12 @@ pub fn get_offset(header: &VTFHeader, image_format: &ImageFormat, frame: u32, fa
     offset
 }
 
-pub fn get_mip_size(header: &VTFHeader, image_format: &ImageFormat, mip_level: u32, depth: u16) -> u32 {
+pub fn get_mip_size(
+    header: &VTFHeader,
+    image_format: &ImageFormat,
+    mip_level: u32,
+    depth: u16,
+) -> u32 {
     let mut mip_width = header.width.wrapping_shr(mip_level);
     let mut mip_height = header.height.wrapping_shr(mip_level);
     let mut mip_depth = depth.wrapping_shr(mip_level);

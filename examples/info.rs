@@ -1,10 +1,10 @@
 extern crate vtf;
 
 use std::env;
-use std::path::Path;
 use std::fs::File;
+use std::io::Read;
+use std::path::Path;
 use std::vec::Vec;
-use std::io::{Read};
 
 fn main() -> std::io::Result<()> {
     let args: Vec<_> = env::args().collect();
@@ -22,5 +22,4 @@ fn main() -> std::io::Result<()> {
 
     println!("{:#?}", vtf);
     Ok(())
-
 }

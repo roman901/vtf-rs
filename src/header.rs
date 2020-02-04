@@ -20,5 +20,5 @@ pub struct VTFHeader {
     pub lowres_image_height: u8,
     pub depth: u16,
     pub padding2: [u8; 3],
-    pub num_resources: u32
+    pub num_resources: u32,
 }

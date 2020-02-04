@@ -1,11 +1,11 @@
 use header::VTFHeader;
-use image::{VTFImage, ImageFormat};
+use image::{ImageFormat, VTFImage};
 
+use std::io::{Cursor, Error, Read};
+use std::iter::Iterator;
 use std::mem;
 use std::slice;
-use std::io::{Read, Cursor, Error};
 use std::vec::Vec;
-use std::iter::Iterator;
 
 const VTF_SIGNATURE: u32 = 0x00465456;
 
@@ -13,7 +13,7 @@ const VTF_SIGNATURE: u32 = 0x00465456;
 pub struct VTF<'a> {
     pub header: VTFHeader,
     pub lowres_image: VTFImage<'a>,
-    pub highres_image: VTFImage<'a>
+    pub highres_image: VTFImage<'a>,
 }
 
 impl<'a> VTF<'a> {
@@ -28,7 +28,10 @@ impl<'a> VTF<'a> {
             cursor.read_exact(slice)?;
         }
 
-        assert_eq!(header.signature, VTF_SIGNATURE, "Specified data is not VTF file");
+        assert_eq!(
+            header.signature, VTF_SIGNATURE,
+            "Specified data is not VTF file"
+        );
 
         if header.version[0] < 7 || (header.version[0] == 7 && header.version[1] < 2) {
             header.depth = 1;
@@ -43,7 +46,7 @@ impl<'a> VTF<'a> {
             ImageFormat::from(header.lowres_image_format as i16),
             header.lowres_image_width as u16,
             header.lowres_image_height as u16,
-            bytes
+            bytes,
         );
 
         let highres_image = VTFImage::new(
@@ -51,13 +54,13 @@ impl<'a> VTF<'a> {
             ImageFormat::from(header.highres_image_format as i16),
             header.width,
             header.height,
-            bytes
+            bytes,
         );
 
         Ok(VTF {
             header,
             lowres_image,
-            highres_image
+            highres_image,
         })
     }
 }
