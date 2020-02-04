@@ -11,13 +11,13 @@ pub fn get_offset(
 ) -> u32 {
     let mut offset: u32 = 0;
 
-    for i in (mip_level + 1..(header.mipmap_count) as i32).rev() {
-        offset += get_mip_size(header, image_format, i as u32, header.depth);
+    for i in (mip_level + 1..(header.mipmap_count()) as i32).rev() {
+        offset += get_mip_size(header, image_format, i as u32, header.depth());
     }
 
-    offset *= header.frames as u32;
+    offset *= header.frames() as u32;
 
-    let volume_bytes: u32 = get_mip_size(header, image_format, mip_level as u32, header.depth);
+    let volume_bytes: u32 = get_mip_size(header, image_format, mip_level as u32, header.depth());
     let slice_bytes: u32 = get_mip_size(header, image_format, mip_level as u32, 1);
 
     offset += volume_bytes * (frame + face);
@@ -32,8 +32,8 @@ pub fn get_mip_size(
     mip_level: u32,
     depth: u16,
 ) -> u32 {
-    let mut mip_width = header.width.wrapping_shr(mip_level);
-    let mut mip_height = header.height.wrapping_shr(mip_level);
+    let mut mip_width = header.width().wrapping_shr(mip_level);
+    let mut mip_height = header.height().wrapping_shr(mip_level);
     let mut mip_depth = depth.wrapping_shr(mip_level);
 
     if mip_width < 1 {

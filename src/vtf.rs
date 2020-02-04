@@ -23,33 +23,33 @@ impl<'a> VTF<'a> {
         cursor.read_exact(header.as_mut_bytes())?;
         let mut header = header.into_header();
 
-        let signature = header.signature;
         assert_eq!(
-            signature, VTF_SIGNATURE,
+            header.signature(), VTF_SIGNATURE,
             "Specified data is not VTF file"
         );
 
-        if header.version[0] < 7 || (header.version[0] == 7 && header.version[1] < 2) {
-            header.depth = 1;
+        let version = header.version();
+        if version[0] < 7 || (version[0] == 7 && version[1] < 2) {
+            header.set_depth(1);
         }
 
-        if header.version[0] < 7 || (header.version[0] == 7 && header.version[1] < 3) {
-            header.num_resources = 0;
+        if version[0] < 7 || (version[0] == 7 && version[1] < 3) {
+            header.set_num_resources(0);
         }
 
         let lowres_image = VTFImage::new(
             header,
-            ImageFormat::from(header.lowres_image_format as i16),
-            header.lowres_image_width as u16,
-            header.lowres_image_height as u16,
+            ImageFormat::from(header.lowres_image_format() as i16),
+            header.lowres_image_width() as u16,
+            header.lowres_image_height() as u16,
             bytes,
         );
 
         let highres_image = VTFImage::new(
             header,
-            ImageFormat::from(header.highres_image_format as i16),
-            header.width,
-            header.height,
+            ImageFormat::from(header.highres_image_format() as i16),
+            header.width(),
+            header.height(),
             bytes,
         );
 
