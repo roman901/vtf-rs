@@ -3,9 +3,8 @@ use crate::image::{ImageFormat, VTFImage};
 
 use std::io::{Cursor, Error, Read};
 
-use std::mem;
-use std::slice;
 use std::vec::Vec;
+use header::VTFHeaderBytes;
 
 const VTF_SIGNATURE: u32 = 0x00465456;
 
@@ -20,13 +19,10 @@ impl<'a> VTF<'a> {
     pub fn read(bytes: &mut Vec<u8>) -> Result<VTF, Error> {
         let mut cursor = Cursor::new(&bytes);
 
-        let mut header: VTFHeader = unsafe { mem::uninitialized() };
-        unsafe {
-            let dst_ptr = &mut header as *mut VTFHeader as *mut u8;
-            let slice = slice::from_raw_parts_mut(dst_ptr, mem::size_of::<VTFHeader>());
+        let mut header = VTFHeaderBytes::new();
 
-            cursor.read_exact(slice)?;
-        }
+        cursor.read_exact(header.as_mut_bytes())?;
+        let mut header = header.into_header();
 
         assert_eq!(
             header.signature, VTF_SIGNATURE,

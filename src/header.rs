@@ -1,3 +1,5 @@
+use std::mem::size_of;
+
 #[derive(Debug, Copy, Clone)]
 #[repr(packed)]
 pub struct VTFHeader {
@@ -21,4 +23,25 @@ pub struct VTFHeader {
     pub depth: u16,
     pub padding2: [u8; 3],
     pub num_resources: u32,
+}
+
+#[repr(C)]
+pub union VTFHeaderBytes {
+    header: VTFHeader,
+    bytes: [u8; size_of::<VTFHeader>()],
+}
+
+impl VTFHeaderBytes {
+    pub fn new() -> Self {
+        VTFHeaderBytes { bytes: [0; size_of::<VTFHeader>()] }
+    }
+
+    pub fn as_mut_bytes(&mut self) -> &mut[u8] {
+        unsafe { &mut self.bytes }
+    }
+
+    pub fn into_header(self) -> VTFHeader {
+        // Safety: this is safe because all possible bit combinations are a valid VTFHeader
+        unsafe { self.header }
+    }
 }
