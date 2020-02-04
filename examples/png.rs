@@ -23,7 +23,7 @@ fn main() -> std::io::Result<()> {
     let vtf = vtf::from_bytes(&mut buf)?;
     let bytes = vtf.highres_image.get_frame(0);
 
-    let mut dxt_decoder = DXTDecoder::new(
+    let dxt_decoder = DXTDecoder::new(
         &bytes[..],
         vtf.highres_image.width as u32,
         vtf.highres_image.height as u32,
