@@ -1,8 +1,8 @@
-use header::VTFHeader;
-use image::{ImageFormat, VTFImage};
+use crate::header::VTFHeader;
+use crate::image::{ImageFormat, VTFImage};
 
 use std::io::{Cursor, Error, Read};
-use std::iter::Iterator;
+
 use std::mem;
 use std::slice;
 use std::vec::Vec;

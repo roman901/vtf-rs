@@ -1,5 +1,5 @@
-use header::VTFHeader;
-use image::ImageFormat;
+use crate::header::VTFHeader;
+use crate::image::ImageFormat;
 
 pub fn get_offset(
     header: &VTFHeader,

@@ -1,5 +1,5 @@
-use header::VTFHeader;
-use utils::get_offset;
+use crate::header::VTFHeader;
+use crate::utils::get_offset;
 
 use std::vec::Vec;
 
