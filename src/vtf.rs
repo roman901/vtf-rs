@@ -1,10 +1,9 @@
 use crate::header::VTFHeader;
 use crate::image::{ImageFormat, VTFImage};
+use crate::header::VTFHeaderBytes;
 
 use std::io::{Cursor, Error, Read};
-
 use std::vec::Vec;
-use header::VTFHeaderBytes;
 
 const VTF_SIGNATURE: u32 = 0x00465456;
 
