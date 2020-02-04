@@ -24,8 +24,9 @@ impl<'a> VTF<'a> {
         cursor.read_exact(header.as_mut_bytes())?;
         let mut header = header.into_header();
 
+        let signature = header.signature;
         assert_eq!(
-            header.signature, VTF_SIGNATURE,
+            signature, VTF_SIGNATURE,
             "Specified data is not VTF file"
         );
 
