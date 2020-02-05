@@ -1,6 +1,6 @@
 use crate::Error;
-use byteorder::{LittleEndian, ReadBytesExt};
-use std::io::Read;
+use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+use std::io::{Read, Write};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ResourceType {
@@ -17,6 +17,12 @@ impl ResourceType {
         id: [0x30, 0x00, 0x00],
         flags: 0,
     };
+
+    const HAS_NO_DATA_CHUNK: u8 = 0x02;
+
+    pub fn has_resource_type(&self) -> bool {
+        self.flags & Self::HAS_NO_DATA_CHUNK == 0
+    }
 }
 
 impl ResourceType {
@@ -25,6 +31,14 @@ impl ResourceType {
             id: [bytes.read_u8()?, bytes.read_u8()?, bytes.read_u8()?],
             flags: bytes.read_u8()?,
         })
+    }
+
+    pub fn write(&self, bytes: &mut impl Write) -> Result<(), Error> {
+        bytes.write_u8(self.id[0])?;
+        bytes.write_u8(self.id[1])?;
+        bytes.write_u8(self.id[2])?;
+        bytes.write_u8(self.flags)?;
+        Ok(())
     }
 }
 
@@ -41,11 +55,17 @@ impl Resource {
             data: bytes.read_u32::<LittleEndian>()?,
         })
     }
+
+    pub fn write(&self, bytes: &mut impl Write) -> Result<(), Error> {
+        self.ty.write(bytes)?;
+        bytes.write_u32::<LittleEndian>(self.data)?;
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone)]
 pub struct ResourceList {
-    resources: Vec<Resource>,
+    pub resources: Vec<Resource>,
 }
 
 impl ResourceList {
@@ -62,6 +82,13 @@ impl ResourceList {
             .map(|_| Resource::read(bytes))
             .collect::<Result<Vec<Resource>, Error>>()?;
         Ok(ResourceList { resources })
+    }
+
+    pub fn write(&self, bytes: &mut impl Write) -> Result<(), Error> {
+        self.resources
+            .iter()
+            .map(|resource| resource.write(bytes))
+            .collect::<Result<(), Error>>()
     }
 
     pub fn get_by_type(&self, ty: ResourceType) -> Option<&Resource> {

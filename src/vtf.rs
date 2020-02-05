@@ -64,4 +64,14 @@ impl<'a> VTF<'a> {
             highres_image,
         })
     }
+
+    pub fn write(&self, bytes: &mut Vec<u8>) -> Result<(), Error> {
+        self.header.write(bytes)?;
+
+        let header_size = self.header.size();
+        assert!(bytes.len() <= header_size, "invalid header size");
+
+        bytes.resize(header_size, 0);
+        Ok(())
+    }
 }
