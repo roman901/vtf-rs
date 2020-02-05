@@ -1,7 +1,8 @@
 use crate::header::VTFHeader;
 use crate::utils::get_offset;
-
 use std::vec::Vec;
+use std::convert::TryFrom;
+use crate::Error;
 
 #[derive(Debug)]
 pub struct VTFImage<'a> {
@@ -73,17 +74,6 @@ pub enum ImageFormat {
 }
 
 impl ImageFormat {
-    pub fn from(num: i16) -> ImageFormat {
-        match num {
-            -1 => ImageFormat::None,
-            0 => ImageFormat::Rgba8888,
-            13 => ImageFormat::Dxt1,
-            14 => ImageFormat::Dxt3,
-            15 => ImageFormat::Dxt5,
-            _ => panic!("ImageFormat {} not supported", num),
-        }
-    }
-
     pub fn frame_size(&self, width: u32, height: u32) -> u32 {
         match self {
             ImageFormat::None => 0,
@@ -102,6 +92,21 @@ impl ImageFormat {
             ImageFormat::Rgba16161616f => width * height * 8,
             ImageFormat::Rgba16161616 => width * height * 8,
             _ => panic!("ImageFormat {:?} not supported", self),
+        }
+    }
+}
+
+impl TryFrom<i16> for ImageFormat {
+    type Error = Error;
+
+    fn try_from(num: i16) -> Result<Self, Self::Error> {
+        match num {
+            -1 => Ok(ImageFormat::None),
+            0 => Ok(ImageFormat::Rgba8888),
+            13 => Ok(ImageFormat::Dxt1),
+            14 => Ok(ImageFormat::Dxt3),
+            15 => Ok(ImageFormat::Dxt5),
+            _ => Err(Error::InvalidImageFormat(num)),
         }
     }
 }

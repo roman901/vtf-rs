@@ -9,3 +9,4 @@ edition = "2018"
 
 [dependencies]
 image = "0.22.4"
+err-derive = "0.2.2"

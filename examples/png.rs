@@ -7,8 +7,9 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use std::vec::Vec;
+use vtf::Error;
 
-fn main() -> std::io::Result<()> {
+fn main() -> Result<(), Error> {
     let args: Vec<_> = env::args().collect();
 
     if args.len() != 3 {
@@ -27,18 +28,16 @@ fn main() -> std::io::Result<()> {
         &bytes[..],
         vtf.highres_image.width as u32,
         vtf.highres_image.height as u32,
-        DXTVariant::DXT1,
-    )
-        .unwrap();
-    let buf = dxt_decoder.read_image().unwrap();
+        DXTVariant::DXT5,
+    )?;
+    let buf = dxt_decoder.read_image()?;
 
     let image = ImageBuffer::from_raw(
         vtf.highres_image.width as u32,
         vtf.highres_image.height as u32,
         buf,
     )
-        .map(DynamicImage::ImageRgb8)
-        .unwrap();
+        .map(DynamicImage::ImageRgb8).unwrap();
 
     image.save(&args[2])?;
     Ok(())

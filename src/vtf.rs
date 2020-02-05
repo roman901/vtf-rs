@@ -2,8 +2,10 @@ use crate::header::VTFHeader;
 use crate::image::{ImageFormat, VTFImage};
 use crate::header::VTFHeaderBytes;
 
-use std::io::{Cursor, Error, Read};
+use std::io::{Cursor, Read};
 use std::vec::Vec;
+use std::convert::TryFrom;
+use crate::Error;
 
 const VTF_SIGNATURE: u32 = 0x00465456;
 
@@ -23,10 +25,9 @@ impl<'a> VTF<'a> {
         cursor.read_exact(header.as_mut_bytes())?;
         let mut header = header.into_header();
 
-        assert_eq!(
-            header.signature(), VTF_SIGNATURE,
-            "Specified data is not VTF file"
-        );
+        if header.signature() != VTF_SIGNATURE {
+            return Err(Error::InvalidSignature);
+        }
 
         let version = header.version();
         if version[0] < 7 || (version[0] == 7 && version[1] < 2) {
@@ -39,7 +40,7 @@ impl<'a> VTF<'a> {
 
         let lowres_image = VTFImage::new(
             header,
-            ImageFormat::from(header.lowres_image_format() as i16),
+            ImageFormat::try_from(header.lowres_image_format() as i16)?,
             header.lowres_image_width() as u16,
             header.lowres_image_height() as u16,
             bytes,
@@ -47,7 +48,7 @@ impl<'a> VTF<'a> {
 
         let highres_image = VTFImage::new(
             header,
-            ImageFormat::from(header.highres_image_format() as i16),
+            ImageFormat::try_from(header.highres_image_format() as i16)?,
             header.width(),
             header.height(),
             bytes,
