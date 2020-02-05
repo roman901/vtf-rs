@@ -23,8 +23,10 @@ fn main() -> Result<(), Error> {
 
     // rgb and rgba images we can save directly, for other formats we convert to rgba
     match image {
-        DynamicImage::ImageRgb8(_) => image.to_rgb().save(&args[2])?,
-        _ => image.to_rgba().save(&args[2])?,
+        DynamicImage::ImageRgb8(_) => image.save(&args[2])?,
+        DynamicImage::ImageRgba8(_) => image.save(&args[2])?,
+        DynamicImage::ImageBgra8(_) => image.to_rgba().save(&args[2])?,
+        _ => image.to_rgb().save(&args[2])?,
     };
     Ok(())
 }
