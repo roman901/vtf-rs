@@ -3,7 +3,7 @@ name = "vtf"
 description = "Valve Texture format library for Rust"
 version = "0.1.2"
 license = "MIT"
-authors = ["Roman Shishkin <spark@uwtech.org>"]
+authors = ["Roman Shishkin <spark@uwtech.org>", "Robin Appelman <robin@icewind.nl>"]
 repository = "https://github.com/roman901/vtf-rs"
 edition = "2018"
 
