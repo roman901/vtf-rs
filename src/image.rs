@@ -1,8 +1,11 @@
 use crate::header::VTFHeader;
 use crate::utils::get_offset;
-use std::vec::Vec;
-use std::convert::TryFrom;
 use crate::Error;
+use image::dxt::{DXTDecoder, DXTVariant};
+use image::{DynamicImage, ImageBuffer, ImageDecoder};
+use parse_display::Display;
+use std::convert::TryFrom;
+use std::vec::Vec;
 
 #[derive(Debug)]
 pub struct VTFImage<'a> {
@@ -30,18 +33,61 @@ impl<'a> VTFImage<'a> {
         }
     }
 
-    pub fn get_frame(&self, frame: u32) -> Vec<u8> {
+    pub fn get_frame(&self, frame: u32) -> &[u8] {
         let frame_size = self
             .format
             .frame_size(self.width as u32, self.height as u32) as usize;
         let fulldata = get_offset(&self.header, &self.format, 0, 0, 0, -1) as usize;
         let base: usize = self.bytes.len() - fulldata
             + get_offset(&self.header, &self.format, frame, 0, 0, 0) as usize;
-        self.bytes[base..base + frame_size].to_vec()
+        &self.bytes[base..base + frame_size]
+    }
+
+    pub fn decode(&self, frame: u32) -> Result<DynamicImage, Error> {
+        let bytes = self.get_frame(frame);
+        match self.format {
+            ImageFormat::Dxt1 => {
+                let buf = DXTDecoder::new(
+                    bytes,
+                    self.width as u32,
+                    self.height as u32,
+                    DXTVariant::DXT1,
+                )?
+                .read_image()?;
+                ImageBuffer::from_raw(self.width as u32, self.height as u32, buf)
+                    .map(DynamicImage::ImageRgb8)
+                    .ok_or(Error::NoDecoder(self.format))
+            }
+            ImageFormat::Dxt1Onebitalpha => {
+                let buf = DXTDecoder::new(
+                    bytes,
+                    self.width as u32,
+                    self.height as u32,
+                    DXTVariant::DXT1,
+                )?
+                .read_image()?;
+                ImageBuffer::from_raw(self.width as u32, self.height as u32, buf)
+                    .map(DynamicImage::ImageRgba8)
+                    .ok_or(Error::NoDecoder(self.format))
+            }
+            ImageFormat::Dxt5 => {
+                let buf = DXTDecoder::new(
+                    bytes,
+                    self.width as u32,
+                    self.height as u32,
+                    DXTVariant::DXT5,
+                )?
+                .read_image()?;
+                ImageBuffer::from_raw(self.width as u32, self.height as u32, buf)
+                    .map(DynamicImage::ImageRgba8)
+                    .ok_or(Error::NoDecoder(self.format))
+            }
+            _ => Err(Error::NoDecoder(self.format)),
+        }
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Display, Clone, Copy, PartialEq)]
 pub enum ImageFormat {
     None = -1,
     Rgba8888 = 0,

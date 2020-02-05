@@ -1,7 +1,3 @@
-use image::dxt::{DXTDecoder, DXTVariant};
-use image::DynamicImage;
-use image::ImageBuffer;
-use image::ImageDecoder;
 use std::env;
 use std::fs::File;
 use std::io::Read;
@@ -22,22 +18,7 @@ fn main() -> Result<(), Error> {
     file.read_to_end(&mut buf)?;
 
     let vtf = vtf::from_bytes(&mut buf)?;
-    let bytes = vtf.highres_image.get_frame(0);
-
-    let dxt_decoder = DXTDecoder::new(
-        &bytes[..],
-        vtf.highres_image.width as u32,
-        vtf.highres_image.height as u32,
-        DXTVariant::DXT5,
-    )?;
-    let buf = dxt_decoder.read_image()?;
-
-    let image = ImageBuffer::from_raw(
-        vtf.highres_image.width as u32,
-        vtf.highres_image.height as u32,
-        buf,
-    )
-        .map(DynamicImage::ImageRgb8).unwrap();
+    let image = vtf.highres_image.decode(0)?;
 
     image.save(&args[2])?;
     Ok(())

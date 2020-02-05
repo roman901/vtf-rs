@@ -102,7 +102,9 @@ pub union VTFHeaderBytes {
 
 impl VTFHeaderBytes {
     pub fn new() -> Self {
-        VTFHeaderBytes { bytes: [0; size_of::<VTFHeader>()] }
+        VTFHeaderBytes {
+            bytes: [0; size_of::<VTFHeader>()],
+        }
     }
 
     pub fn as_mut_bytes(&mut self) -> &mut [u8] {
