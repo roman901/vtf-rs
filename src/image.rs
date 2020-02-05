@@ -45,41 +45,27 @@ impl<'a> VTFImage<'a> {
         &self.bytes[base..base + frame_size]
     }
 
+    fn decode_dxt(&self, bytes: &[u8], variant: DXTVariant) -> Result<Vec<u8>, Error> {
+        Ok(DXTDecoder::new(bytes, self.width as u32, self.height as u32, variant)?.read_image()?)
+    }
+
     pub fn decode(&self, frame: u32) -> Result<DynamicImage, Error> {
         let bytes = self.get_frame(frame);
         match self.format {
             ImageFormat::Dxt1 => {
-                let buf = DXTDecoder::new(
-                    bytes,
-                    self.width as u32,
-                    self.height as u32,
-                    DXTVariant::DXT1,
-                )?
-                .read_image()?;
+                let buf = self.decode_dxt(bytes, DXTVariant::DXT1)?;
                 ImageBuffer::from_raw(self.width as u32, self.height as u32, buf)
                     .map(DynamicImage::ImageRgb8)
                     .ok_or(Error::NoDecoder(self.format))
             }
             ImageFormat::Dxt1Onebitalpha => {
-                let buf = DXTDecoder::new(
-                    bytes,
-                    self.width as u32,
-                    self.height as u32,
-                    DXTVariant::DXT1,
-                )?
-                .read_image()?;
+                let buf = self.decode_dxt(bytes, DXTVariant::DXT1)?;
                 ImageBuffer::from_raw(self.width as u32, self.height as u32, buf)
                     .map(DynamicImage::ImageRgba8)
                     .ok_or(Error::NoDecoder(self.format))
             }
             ImageFormat::Dxt5 => {
-                let buf = DXTDecoder::new(
-                    bytes,
-                    self.width as u32,
-                    self.height as u32,
-                    DXTVariant::DXT5,
-                )?
-                .read_image()?;
+                let buf = self.decode_dxt(bytes, DXTVariant::DXT5)?;
                 ImageBuffer::from_raw(self.width as u32, self.height as u32, buf)
                     .map(DynamicImage::ImageRgba8)
                     .ok_or(Error::NoDecoder(self.format))
