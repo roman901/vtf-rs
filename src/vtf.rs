@@ -1,63 +1,72 @@
-use header::VTFHeader;
-use image::{VTFImage, ImageFormat};
+use crate::header::VTFHeader;
+use crate::image::{ImageFormat, VTFImage};
 
-use std::mem;
-use std::slice;
-use std::io::{Read, Cursor, Error};
+use crate::resources::ResourceType;
+use crate::Error;
+use std::convert::TryFrom;
+use std::io::Cursor;
 use std::vec::Vec;
-use std::iter::Iterator;
-
-const VTF_SIGNATURE: u32 = 0x00465456;
 
 #[derive(Debug)]
 pub struct VTF<'a> {
     pub header: VTFHeader,
     pub lowres_image: VTFImage<'a>,
-    pub highres_image: VTFImage<'a>
+    pub highres_image: VTFImage<'a>,
 }
 
 impl<'a> VTF<'a> {
     pub fn read(bytes: &mut Vec<u8>) -> Result<VTF, Error> {
         let mut cursor = Cursor::new(&bytes);
 
-        let mut header: VTFHeader = unsafe { mem::uninitialized() };
-        unsafe {
-            let dst_ptr = &mut header as *mut VTFHeader as *mut u8;
-            let slice = slice::from_raw_parts_mut(dst_ptr, mem::size_of::<VTFHeader>());
+        let header = VTFHeader::read(&mut cursor)?;
 
-            cursor.read_exact(slice)?;
-        }
+        let lowres_format = ImageFormat::try_from(header.lowres_image_format as i16)?;
+        let highres_format = ImageFormat::try_from(header.highres_image_format as i16)?;
 
-        assert_eq!(header.signature, VTF_SIGNATURE, "Specified data is not VTF file");
+        let lowres_offset = match header
+            .resources
+            .get_by_type(ResourceType::VTF_LEGACY_RSRC_LOW_RES_IMAGE)
+        {
+            Some(resource) => resource.data,
+            None => header.header_size,
+        };
 
-        if header.version[0] < 7 || (header.version[0] == 7 && header.version[1] < 2) {
-            header.depth = 1;
-        }
-
-        if header.version[0] < 7 || (header.version[0] == 7 && header.version[1] < 3) {
-            header.num_resources = 0;
-        }
+        let highres_offset = match header
+            .resources
+            .get_by_type(ResourceType::VTF_LEGACY_RSRC_LOW_RES_IMAGE)
+        {
+            Some(resource) => resource.data,
+            None => {
+                lowres_offset
+                    + lowres_format.frame_size(
+                        header.lowres_image_width as u32,
+                        header.lowres_image_height as u32,
+                    )?
+            }
+        };
 
         let lowres_image = VTFImage::new(
-            header,
-            ImageFormat::from(header.lowres_image_format as i16),
+            header.clone(),
+            lowres_format,
             header.lowres_image_width as u16,
             header.lowres_image_height as u16,
-            bytes
+            bytes,
+            lowres_offset as usize,
         );
 
         let highres_image = VTFImage::new(
-            header,
-            ImageFormat::from(header.highres_image_format as i16),
+            header.clone(),
+            highres_format,
             header.width,
             header.height,
-            bytes
+            bytes,
+            highres_offset as usize,
         );
 
         Ok(VTF {
             header,
             lowres_image,
-            highres_image
+            highres_image,
         })
     }
 }

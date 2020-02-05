@@ -1,18 +1,12 @@
-extern crate image;
-extern crate vtf;
-
-use std::env;
-use std::path::Path;
-use std::fs::File;
-use std::vec::Vec;
-use std::io::{Read};
-use image::dxt::{DXTDecoder, DXTVariant};
-use image::ImageDecoder;
-use image::ImageBuffer;
 use image::DynamicImage;
-use image::DecodingResult::U8;
+use std::env;
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
+use std::vec::Vec;
+use vtf::Error;
 
-fn main() -> std::io::Result<()> {
+fn main() -> Result<(), Error> {
     let args: Vec<_> = env::args().collect();
 
     if args.len() != 3 {
@@ -25,28 +19,12 @@ fn main() -> std::io::Result<()> {
     file.read_to_end(&mut buf)?;
 
     let vtf = vtf::from_bytes(&mut buf)?;
-    let bytes = vtf.highres_image.get_frame(0);
+    let image = vtf.highres_image.decode(0)?;
 
-    let mut dxt_decoder = DXTDecoder::new(
-        &bytes[..],
-        vtf.highres_image.width as u32,
-        vtf.highres_image.height as u32,
-        DXTVariant::DXT1).unwrap();
-    let buf = dxt_decoder.read_image().unwrap();
-
-    let image = match buf {
-        U8(buf) => {
-            Some(ImageBuffer::from_raw(
-                vtf.highres_image.width as u32,
-                vtf.highres_image.height as u32,
-                buf
-            ).map(DynamicImage::ImageRgb8).unwrap())
-        },
-        _ => None
+    // rgb and rgba images we can save directly, for other formats we convert to rgba
+    match image {
+        DynamicImage::ImageRgb8(_) => image.to_rgb().save(&args[2])?,
+        _ => image.to_rgba().save(&args[2])?,
     };
-    let img = image.unwrap();
-
-    img.save(&args[2])?;
     Ok(())
-
 }

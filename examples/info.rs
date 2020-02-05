@@ -1,12 +1,11 @@
-extern crate vtf;
-
 use std::env;
-use std::path::Path;
 use std::fs::File;
+use std::io::Read;
+use std::path::Path;
 use std::vec::Vec;
-use std::io::{Read};
+use vtf::Error;
 
-fn main() -> std::io::Result<()> {
+fn main() -> Result<(), Error> {
     let args: Vec<_> = env::args().collect();
 
     if args.len() != 2 {
@@ -22,5 +21,4 @@ fn main() -> std::io::Result<()> {
 
     println!("{:#?}", vtf);
     Ok(())
-
 }
