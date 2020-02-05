@@ -94,6 +94,16 @@ impl<'a> VTFImage<'a> {
                     .map(DynamicImage::ImageRgb8)
                     .ok_or(Error::NoDecoder(self.format))
             }
+            ImageFormat::Bgr888 => {
+                ImageBuffer::from_raw(self.width as u32, self.height as u32, bytes.to_vec())
+                    .map(DynamicImage::ImageBgr8)
+                    .ok_or(Error::NoDecoder(self.format))
+            }
+            ImageFormat::Bgra8888 => {
+                ImageBuffer::from_raw(self.width as u32, self.height as u32, bytes.to_vec())
+                    .map(DynamicImage::ImageBgra8)
+                    .ok_or(Error::NoDecoder(self.format))
+            }
             _ => Err(Error::NoDecoder(self.format)),
         }
     }

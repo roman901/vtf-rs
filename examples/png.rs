@@ -20,6 +20,6 @@ fn main() -> Result<(), Error> {
     let vtf = vtf::from_bytes(&mut buf)?;
     let image = vtf.highres_image.decode(0)?;
 
-    image.save(&args[2])?;
+    image.into_rgba().save(&args[2])?;
     Ok(())
 }
