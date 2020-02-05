@@ -1,3 +1,4 @@
+use image::DynamicImage;
 use std::env;
 use std::fs::File;
 use std::io::Read;
@@ -20,6 +21,10 @@ fn main() -> Result<(), Error> {
     let vtf = vtf::from_bytes(&mut buf)?;
     let image = vtf.highres_image.decode(0)?;
 
-    image.into_rgba().save(&args[2])?;
+    // rgb and rgba images we can save directly, for other formats we convert to rgba
+    match image {
+        DynamicImage::ImageRgb8(_) => image.to_rgb().save(&args[2])?,
+        _ => image.to_rgba().save(&args[2])?,
+    };
     Ok(())
 }
