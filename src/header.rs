@@ -1,6 +1,8 @@
+use crate::image::ImageFormat;
 use crate::resources::ResourceList;
 use crate::Error;
 use byteorder::{LittleEndian, ReadBytesExt};
+use std::convert::TryFrom;
 use std::io::Read;
 
 #[derive(Debug, Clone)]
@@ -15,9 +17,9 @@ pub struct VTFHeader {
     pub first_frame: u16,
     pub reflectivity: [f32; 3],
     pub bumpmap_scale: f32,
-    pub highres_image_format: u32,
+    pub highres_image_format: ImageFormat,
     pub mipmap_count: u8,
-    pub lowres_image_format: u32,
+    pub lowres_image_format: ImageFormat,
     pub lowres_image_width: u8,
     pub lowres_image_height: u8,
     pub depth: u16,
@@ -82,9 +84,9 @@ impl VTFHeader {
             first_frame,
             reflectivity,
             bumpmap_scale,
-            highres_image_format,
+            highres_image_format: ImageFormat::try_from(highres_image_format as i16)?,
             mipmap_count,
-            lowres_image_format,
+            lowres_image_format: ImageFormat::try_from(lowres_image_format as i16)?,
             lowres_image_width,
             lowres_image_height,
             depth,
