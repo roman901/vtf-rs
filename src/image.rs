@@ -2,9 +2,10 @@ use crate::header::VTFHeader;
 use crate::utils::get_offset;
 use crate::Error;
 use image::dxt::{DXTDecoder, DXTVariant};
-use image::{DynamicImage, ImageBuffer, ImageDecoder};
+use image::{DynamicImage, ImageBuffer, ImageDecoder, Pixel};
 use num_enum::TryFromPrimitive;
 use parse_display::Display;
+use std::ops::Deref;
 use std::vec::Vec;
 
 #[derive(Debug)]
@@ -49,46 +50,48 @@ impl<'a> VTFImage<'a> {
         Ok(DXTDecoder::new(bytes, self.width as u32, self.height as u32, variant)?.read_image()?)
     }
 
+    fn image_from_buffer<P, Container, F>(
+        &self,
+        buffer: Container,
+        format: F,
+    ) -> Result<DynamicImage, Error>
+    where
+        P: Pixel + 'static,
+        P::Subpixel: 'static,
+        Container: Deref<Target = [P::Subpixel]>,
+        F: FnOnce(ImageBuffer<P, Container>) -> DynamicImage,
+    {
+        ImageBuffer::from_raw(self.width as u32, self.height as u32, buffer)
+            .map(format)
+            .ok_or(Error::NoDecoder(self.format))
+    }
+
     pub fn decode(&self, frame: u32) -> Result<DynamicImage, Error> {
         let bytes = self.get_frame(frame);
         match self.format {
             ImageFormat::Dxt1 => {
                 let buf = self.decode_dxt(bytes, DXTVariant::DXT1)?;
-                ImageBuffer::from_raw(self.width as u32, self.height as u32, buf)
-                    .map(DynamicImage::ImageRgb8)
-                    .ok_or(Error::NoDecoder(self.format))
+                self.image_from_buffer(buf, DynamicImage::ImageRgb8)
             }
             ImageFormat::Dxt1Onebitalpha => {
                 let buf = self.decode_dxt(bytes, DXTVariant::DXT1)?;
-                ImageBuffer::from_raw(self.width as u32, self.height as u32, buf)
-                    .map(DynamicImage::ImageRgba8)
-                    .ok_or(Error::NoDecoder(self.format))
+                self.image_from_buffer(buf, DynamicImage::ImageRgba8)
+            }
+            ImageFormat::Dxt3 => {
+                let buf = self.decode_dxt(bytes, DXTVariant::DXT3)?;
+                self.image_from_buffer(buf, DynamicImage::ImageRgba8)
             }
             ImageFormat::Dxt5 => {
                 let buf = self.decode_dxt(bytes, DXTVariant::DXT5)?;
-                ImageBuffer::from_raw(self.width as u32, self.height as u32, buf)
-                    .map(DynamicImage::ImageRgba8)
-                    .ok_or(Error::NoDecoder(self.format))
+                self.image_from_buffer(buf, DynamicImage::ImageRgba8)
             }
             ImageFormat::Rgba8888 => {
-                ImageBuffer::from_raw(self.width as u32, self.height as u32, bytes.to_vec())
-                    .map(DynamicImage::ImageRgba8)
-                    .ok_or(Error::NoDecoder(self.format))
+                self.image_from_buffer(bytes.to_vec(), DynamicImage::ImageRgba8)
             }
-            ImageFormat::Rgb888 => {
-                ImageBuffer::from_raw(self.width as u32, self.height as u32, bytes.to_vec())
-                    .map(DynamicImage::ImageRgb8)
-                    .ok_or(Error::NoDecoder(self.format))
-            }
-            ImageFormat::Bgr888 => {
-                ImageBuffer::from_raw(self.width as u32, self.height as u32, bytes.to_vec())
-                    .map(DynamicImage::ImageBgr8)
-                    .ok_or(Error::NoDecoder(self.format))
-            }
+            ImageFormat::Rgb888 => self.image_from_buffer(bytes.to_vec(), DynamicImage::ImageRgb8),
+            ImageFormat::Bgr888 => self.image_from_buffer(bytes.to_vec(), DynamicImage::ImageBgr8),
             ImageFormat::Bgra8888 => {
-                ImageBuffer::from_raw(self.width as u32, self.height as u32, bytes.to_vec())
-                    .map(DynamicImage::ImageBgra8)
-                    .ok_or(Error::NoDecoder(self.format))
+                self.image_from_buffer(bytes.to_vec(), DynamicImage::ImageBgra8)
             }
             _ => Err(Error::NoDecoder(self.format)),
         }
