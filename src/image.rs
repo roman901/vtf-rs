@@ -93,7 +93,7 @@ impl<'a> VTFImage<'a> {
             ImageFormat::Bgra8888 => {
                 self.image_from_buffer(bytes.to_vec(), DynamicImage::ImageBgra8)
             }
-            _ => Err(Error::NoDecoder(self.format)),
+            _ => Err(Error::UnsupportedImageFormat(self.format)),
         }
     }
 }
