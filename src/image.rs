@@ -37,13 +37,13 @@ impl<'a> VTFImage<'a> {
         }
     }
 
-    pub fn get_frame(&self, frame: u32) -> &[u8] {
+    pub fn get_frame(&self, frame: u32) -> Result<&[u8], Error> {
         let frame_size = self
             .format
-            .frame_size(self.width as u32, self.height as u32) as usize;
+            .frame_size(self.width as u32, self.height as u32)? as usize;
         let base: usize =
-            self.offset + get_offset(&self.header, &self.format, frame, 0, 0, 0) as usize;
-        &self.bytes[base..base + frame_size]
+            self.offset + get_offset(&self.header, &self.format, frame, 0, 0, 0)? as usize;
+        Ok(&self.bytes[base..base + frame_size])
     }
 
     fn decode_dxt(&self, bytes: &[u8], variant: DXTVariant) -> Result<Vec<u8>, Error> {
@@ -63,11 +63,11 @@ impl<'a> VTFImage<'a> {
     {
         ImageBuffer::from_raw(self.width as u32, self.height as u32, buffer)
             .map(format)
-            .ok_or(Error::NoDecoder(self.format))
+            .ok_or(Error::InvalidImageData)
     }
 
     pub fn decode(&self, frame: u32) -> Result<DynamicImage, Error> {
-        let bytes = self.get_frame(frame);
+        let bytes = self.get_frame(frame)?;
         match self.format {
             ImageFormat::Dxt1 => {
                 let buf = self.decode_dxt(bytes, DXTVariant::DXT1)?;
@@ -132,24 +132,24 @@ pub enum ImageFormat {
 }
 
 impl ImageFormat {
-    pub fn frame_size(&self, width: u32, height: u32) -> u32 {
+    pub fn frame_size(&self, width: u32, height: u32) -> Result<u32, Error> {
         match self {
-            ImageFormat::None => 0,
-            ImageFormat::Rgba8888 => width * height * 4,
-            ImageFormat::Abgr8888 => width * height * 4,
-            ImageFormat::Rgb888 => width * height * 3,
-            ImageFormat::Bgr888 => width * height * 3,
-            ImageFormat::Rgb565 => width * height * 2,
-            ImageFormat::I8 => width * height * 1,
-            ImageFormat::Ia88 => width * height * 2,
-            ImageFormat::A8 => width * height,
-            ImageFormat::Argb8888 => width * height * 4,
-            ImageFormat::Bgra8888 => width * height * 4,
-            ImageFormat::Dxt1 => ((width + 3) / 4) * ((height + 3) / 4) * 8,
-            ImageFormat::Dxt5 => ((width + 3) / 4) * ((height + 3) / 4) * 16,
-            ImageFormat::Rgba16161616f => width * height * 8,
-            ImageFormat::Rgba16161616 => width * height * 8,
-            _ => panic!("ImageFormat {:?} not supported", self),
+            ImageFormat::None => Ok(0),
+            ImageFormat::Rgba8888 => Ok(width * height * 4),
+            ImageFormat::Abgr8888 => Ok(width * height * 4),
+            ImageFormat::Rgb888 => Ok(width * height * 3),
+            ImageFormat::Bgr888 => Ok(width * height * 3),
+            ImageFormat::Rgb565 => Ok(width * height * 2),
+            ImageFormat::I8 => Ok(width * height * 1),
+            ImageFormat::Ia88 => Ok(width * height * 2),
+            ImageFormat::A8 => Ok(width * height),
+            ImageFormat::Argb8888 => Ok(width * height * 4),
+            ImageFormat::Bgra8888 => Ok(width * height * 4),
+            ImageFormat::Dxt1 => Ok(((width + 3) / 4) * ((height + 3) / 4) * 8),
+            ImageFormat::Dxt5 => Ok(((width + 3) / 4) * ((height + 3) / 4) * 16),
+            ImageFormat::Rgba16161616f => Ok(width * height * 8),
+            ImageFormat::Rgba16161616 => Ok(width * height * 8),
+            _ => Err(Error::UnsupportedImageFormat(*self)),
         }
     }
 }

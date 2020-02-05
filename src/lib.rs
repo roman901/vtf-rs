@@ -19,8 +19,12 @@ pub enum Error {
     InvalidImageFormat(i16),
     #[error(display = "Error manipulating image data: {}", _0)]
     Image(#[error(source)] ::image::ImageError),
+    #[error(display = "Decoding {} images is not supported", _0)]
+    UnsupportedImageFormat(ImageFormat),
     #[error(display = "No decoder is implemented for the image format {}", _0)]
     NoDecoder(ImageFormat),
+    #[error(display = "Decoded image data does not have the expected size")]
+    InvalidImageData,
 }
 
 impl From<TryFromPrimitiveError<image::ImageFormat>> for Error {

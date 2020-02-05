@@ -41,7 +41,7 @@ impl<'a> VTF<'a> {
                     + lowres_format.frame_size(
                         header.lowres_image_width as u32,
                         header.lowres_image_height as u32,
-                    )
+                    )?
             }
         };
 
