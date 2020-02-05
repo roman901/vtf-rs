@@ -3,8 +3,8 @@ use crate::utils::get_offset;
 use crate::Error;
 use image::dxt::{DXTDecoder, DXTVariant};
 use image::{DynamicImage, ImageBuffer, ImageDecoder};
+use num_enum::TryFromPrimitive;
 use parse_display::Display;
-use std::convert::TryFrom;
 use std::vec::Vec;
 
 #[derive(Debug)]
@@ -13,7 +13,8 @@ pub struct VTFImage<'a> {
     pub format: ImageFormat,
     pub width: u16,
     pub height: u16,
-    bytes: &'a Vec<u8>,
+    bytes: &'a [u8],
+    offset: usize,
 }
 
 impl<'a> VTFImage<'a> {
@@ -23,6 +24,7 @@ impl<'a> VTFImage<'a> {
         width: u16,
         height: u16,
         bytes: &'a Vec<u8>,
+        offset: usize,
     ) -> VTFImage<'a> {
         VTFImage {
             header,
@@ -30,6 +32,7 @@ impl<'a> VTFImage<'a> {
             width,
             height,
             bytes,
+            offset,
         }
     }
 
@@ -37,9 +40,8 @@ impl<'a> VTFImage<'a> {
         let frame_size = self
             .format
             .frame_size(self.width as u32, self.height as u32) as usize;
-        let fulldata = get_offset(&self.header, &self.format, 0, 0, 0, -1) as usize;
-        let base: usize = self.bytes.len() - fulldata
-            + get_offset(&self.header, &self.format, frame, 0, 0, 0) as usize;
+        let base: usize =
+            self.offset + get_offset(&self.header, &self.format, frame, 0, 0, 0) as usize;
         &self.bytes[base..base + frame_size]
     }
 
@@ -87,7 +89,8 @@ impl<'a> VTFImage<'a> {
     }
 }
 
-#[derive(Debug, Display, Clone, Copy, PartialEq)]
+#[derive(Debug, Display, Clone, Copy, PartialEq, TryFromPrimitive)]
+#[repr(i16)]
 pub enum ImageFormat {
     None = -1,
     Rgba8888 = 0,
@@ -138,21 +141,6 @@ impl ImageFormat {
             ImageFormat::Rgba16161616f => width * height * 8,
             ImageFormat::Rgba16161616 => width * height * 8,
             _ => panic!("ImageFormat {:?} not supported", self),
-        }
-    }
-}
-
-impl TryFrom<i16> for ImageFormat {
-    type Error = Error;
-
-    fn try_from(num: i16) -> Result<Self, Self::Error> {
-        match num {
-            -1 => Ok(ImageFormat::None),
-            0 => Ok(ImageFormat::Rgba8888),
-            13 => Ok(ImageFormat::Dxt1),
-            14 => Ok(ImageFormat::Dxt3),
-            15 => Ok(ImageFormat::Dxt5),
-            _ => Err(Error::InvalidImageFormat(num)),
         }
     }
 }

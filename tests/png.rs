@@ -6,15 +6,19 @@ use std::io::Read;
 use std::vec::Vec;
 
 #[test]
-fn test_to_png() {
-    let mut file = File::open("tests/data/rust.vtf").unwrap();
+fn test_to_dxt5() {
+    test_image("tests/data/rust_dxt5.vtf", "tests/data/rust_dxt5.png");
+}
+
+fn test_image(input: &str, expected: &str) {
+    let mut file = File::open(input).unwrap();
     let mut buf = Vec::new();
     file.read_to_end(&mut buf).unwrap();
 
     let vtf = vtf::from_bytes(&mut buf).unwrap();
     let image = vtf.highres_image.decode(0).unwrap();
 
-    let expected = open("tests/data/rust.png").unwrap();
+    let expected = open(expected).unwrap();
 
     assert_eq!(expected.dimensions(), image.dimensions());
 
