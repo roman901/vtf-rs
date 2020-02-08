@@ -4,7 +4,7 @@ mod resources;
 mod utils;
 mod vtf;
 
-use crate::image::ImageFormat;
+pub use crate::image::ImageFormat;
 use crate::vtf::VTF;
 use ::image::DynamicImage;
 use err_derive::Error;
@@ -26,6 +26,8 @@ pub enum Error {
     InvalidImageData,
     #[error(display = "Image size needs to be a power of 2 and below 2^16")]
     InvalidImageSize,
+    #[error(display = "Encoding {} images is not supported", _0)]
+    UnsupportedEncodeImageFormat(ImageFormat),
 }
 
 impl From<TryFromPrimitiveError<image::ImageFormat>> for Error {
@@ -38,6 +40,6 @@ pub fn from_bytes(bytes: &mut Vec<u8>) -> Result<VTF, Error> {
     VTF::read(bytes)
 }
 
-pub fn create(image: DynamicImage) -> Result<Vec<u8>, Error> {
-    VTF::create(image)
+pub fn create(image: DynamicImage, image_format: ImageFormat) -> Result<Vec<u8>, Error> {
+    VTF::create(image, image_format)
 }

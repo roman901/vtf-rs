@@ -67,7 +67,7 @@ impl<'a> VTF<'a> {
         })
     }
 
-    pub fn create(image: DynamicImage) -> Result<Vec<u8>, Error> {
+    pub fn create(image: DynamicImage, image_format: ImageFormat) -> Result<Vec<u8>, Error> {
         if !image.width().is_power_of_two()
             || !image.height().is_power_of_two()
             || image.width() > u16::max_value() as u32
@@ -87,7 +87,7 @@ impl<'a> VTF<'a> {
             first_frame: 0,
             reflectivity: [0.0, 0.0, 0.0],
             bumpmap_scale: 1.0,
-            highres_image_format: ImageFormat::Dxt5, // todo get from source image, allow dxt compression, etc
+            highres_image_format: image_format,
             mipmap_count: 1,
             lowres_image_format: ImageFormat::Dxt1, // always the case
             lowres_image_width: 0,                  // no lowres for now
@@ -115,14 +115,37 @@ impl<'a> VTF<'a> {
 
         data.resize(header_size, 0);
 
-        let image_data = image.to_rgba();
-        let encoder = DXTEncoder::new(&mut data);
-        encoder.encode(
-            &image_data,
-            header.width as u32,
-            header.height as u32,
-            DXTVariant::DXT5,
-        )?;
+        match image_format {
+            ImageFormat::Dxt5 => {
+                let image_data = image.to_rgba();
+                let encoder = DXTEncoder::new(&mut data);
+                encoder.encode(
+                    &image_data,
+                    header.width as u32,
+                    header.height as u32,
+                    DXTVariant::DXT5,
+                )?;
+            }
+            ImageFormat::Dxt1Onebitalpha => {
+                let image_data = image.to_rgba();
+                let encoder = DXTEncoder::new(&mut data);
+                encoder.encode(
+                    &image_data,
+                    header.width as u32,
+                    header.height as u32,
+                    DXTVariant::DXT1,
+                )?;
+            }
+            ImageFormat::Rgba8888 => {
+                let image_data = image.to_rgba();
+                data.extend_from_slice(&image_data);
+            }
+            ImageFormat::Rgb888 => {
+                let image_data = image.to_rgb();
+                data.extend_from_slice(&image_data);
+            }
+            _ => return Err(Error::UnsupportedEncodeImageFormat(image_format)),
+        }
 
         Ok(data)
     }

@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 use std::vec::Vec;
-use vtf::Error;
+use vtf::{Error, ImageFormat};
 
 fn main() -> Result<(), Error> {
     let args: Vec<_> = env::args().collect();
@@ -13,7 +13,7 @@ fn main() -> Result<(), Error> {
     }
 
     let image = image::open(&args[1])?;
-    let vtf_data = vtf::create(image)?;
+    let vtf_data = vtf::create(image, ImageFormat::Dxt5)?;
 
     let path = Path::new(&args[2]);
     let mut file = File::create(path)?;
