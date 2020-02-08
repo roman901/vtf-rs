@@ -26,13 +26,13 @@ pub struct VTFHeader {
     pub resources: ResourceList,
 }
 
-const VTF_SIGNATURE: u32 = 0x00465456;
-
 impl VTFHeader {
+    pub const SIGNATURE: u32 = 0x00465456;
+
     pub fn read(bytes: &mut impl Read) -> Result<Self, Error> {
         let signature = bytes.read_u32::<LittleEndian>()?;
 
-        if signature != VTF_SIGNATURE {
+        if signature != Self::SIGNATURE {
             return Err(Error::InvalidSignature);
         }
 
