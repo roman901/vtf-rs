@@ -15,3 +15,16 @@ fn test_info() {
     assert_eq!(512, vtf.header.height);
     assert_eq!(1, vtf.header.frames);
 }
+
+#[test]
+fn test_write_header() {
+    let mut file = File::open("tests/data/vtf_74.vtf").unwrap();
+    let mut buf = Vec::new();
+    file.read_to_end(&mut buf).unwrap();
+
+    let vtf = vtf::from_bytes(&mut buf).unwrap();
+
+    let mut written = Vec::new();
+    vtf.header.write(&mut written).unwrap();
+    assert_eq!(written.as_slice(), &buf[0..written.len()]);
+}

@@ -19,6 +19,6 @@ fn main() -> Result<(), Error> {
 
     let vtf = vtf::from_bytes(&mut buf)?;
 
-    println!("{:#?}", vtf);
+    println!("{:#?}", vtf.header);
     Ok(())
 }
