@@ -10,7 +10,7 @@ fn main() -> Result<(), Error> {
     let args: Vec<_> = env::args().collect();
 
     if args.len() != 3 {
-        panic!("Usage: png <path to vtf file> <destination of new png file");
+        panic!("Usage: png <path to vtf file> <destination of new png file>");
     }
 
     let path = Path::new(&args[1]);

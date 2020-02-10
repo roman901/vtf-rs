@@ -9,7 +9,7 @@ fn main() -> Result<(), Error> {
     let args: Vec<_> = env::args().collect();
 
     if args.len() != 3 {
-        panic!("Usage: vtf <path to png file> <destination of new vtf file");
+        panic!("Usage: vtf <path to png file> <destination of new vtf file>");
     }
 
     let image = image::open(&args[1])?;
