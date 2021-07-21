@@ -8,7 +8,7 @@ repository = "https://github.com/roman901/vtf-rs"
 edition = "2018"
 
 [dependencies]
-image = "0.22.4"
+image = "0.23.14"
 err-derive = "0.2.2"
 parse-display = "0.1.1"
 num_enum = "0.4"

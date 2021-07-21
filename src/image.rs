@@ -1,7 +1,7 @@
 use crate::header::VTFHeader;
 use crate::utils::get_offset;
 use crate::Error;
-use image::dxt::{DXTDecoder, DXTVariant};
+use image::dxt::{DxtDecoder, DXTVariant};
 use image::{DynamicImage, ImageBuffer, ImageDecoder, Pixel};
 use num_enum::TryFromPrimitive;
 use parse_display::Display;
@@ -47,7 +47,9 @@ impl<'a> VTFImage<'a> {
     }
 
     fn decode_dxt(&self, bytes: &[u8], variant: DXTVariant) -> Result<Vec<u8>, Error> {
-        Ok(DXTDecoder::new(bytes, self.width as u32, self.height as u32, variant)?.read_image()?)
+        let mut output: Vec<u8> = Vec::new();
+        DxtDecoder::new(bytes, self.width as u32, self.height as u32, variant)?.read_image(&mut output)?;
+        Ok(output.to_vec())
     }
 
     fn image_from_buffer<P, Container, F>(

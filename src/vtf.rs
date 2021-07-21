@@ -2,7 +2,7 @@ use crate::header::VTFHeader;
 use crate::image::{ImageFormat, VTFImage};
 use crate::resources::{ResourceList, ResourceType};
 use crate::Error;
-use image::dxt::{DXTEncoder, DXTVariant};
+use image::dxt::{DxtEncoder, DXTVariant};
 use image::{DynamicImage, GenericImageView};
 use std::io::Cursor;
 use std::vec::Vec;
@@ -117,8 +117,8 @@ impl<'a> VTF<'a> {
 
         match image_format {
             ImageFormat::Dxt5 => {
-                let image_data = image.to_rgba();
-                let encoder = DXTEncoder::new(&mut data);
+                let image_data = image.to_rgba8();
+                let encoder = DxtEncoder::new(&mut data);
                 encoder.encode(
                     &image_data,
                     header.width as u32,
@@ -127,8 +127,8 @@ impl<'a> VTF<'a> {
                 )?;
             }
             ImageFormat::Dxt1Onebitalpha => {
-                let image_data = image.to_rgba();
-                let encoder = DXTEncoder::new(&mut data);
+                let image_data = image.to_rgba8();
+                let encoder = DxtEncoder::new(&mut data);
                 encoder.encode(
                     &image_data,
                     header.width as u32,
@@ -137,11 +137,11 @@ impl<'a> VTF<'a> {
                 )?;
             }
             ImageFormat::Rgba8888 => {
-                let image_data = image.to_rgba();
+                let image_data = image.to_rgba8();
                 data.extend_from_slice(&image_data);
             }
             ImageFormat::Rgb888 => {
-                let image_data = image.to_rgb();
+                let image_data = image.to_rgb8();
                 data.extend_from_slice(&image_data);
             }
             _ => return Err(Error::UnsupportedEncodeImageFormat(image_format)),
