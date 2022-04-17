@@ -1,8 +1,8 @@
-mod header;
-mod image;
-mod resources;
+pub mod header;
+pub mod image;
+pub mod resources;
 mod utils;
-mod vtf;
+pub mod vtf;
 
 pub use crate::image::ImageFormat;
 use crate::vtf::VTF;
