@@ -1,9 +1,6 @@
 use image::DynamicImage;
 use std::env;
-use std::fs::File;
-use std::io::Read;
-use std::path::Path;
-use std::vec::Vec;
+use std::fs;
 use vtf::Error;
 
 fn main() -> Result<(), Error> {
@@ -13,10 +10,7 @@ fn main() -> Result<(), Error> {
         panic!("Usage: png <path to vtf file> <destination of new png file>");
     }
 
-    let path = Path::new(&args[1]);
-    let mut file = File::open(path)?;
-    let mut buf = Vec::new();
-    file.read_to_end(&mut buf)?;
+    let mut buf = fs::read(&args[1])?;
 
     let vtf = vtf::from_bytes(&mut buf)?;
     let image = vtf.highres_image.decode(0)?;
@@ -25,8 +19,8 @@ fn main() -> Result<(), Error> {
     match image {
         DynamicImage::ImageRgb8(_) => image.save(&args[2])?,
         DynamicImage::ImageRgba8(_) => image.save(&args[2])?,
-        DynamicImage::ImageBgra8(_) => image.to_rgba().save(&args[2])?,
-        _ => image.to_rgb().save(&args[2])?,
+        DynamicImage::ImageBgra8(_) => image.to_rgba8().save(&args[2])?,
+        _ => image.to_rgb8().save(&args[2])?,
     };
     Ok(())
 }

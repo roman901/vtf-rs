@@ -2,7 +2,7 @@ use crate::header::VTFHeader;
 use crate::image::{ImageFormat, VTFImage};
 use crate::resources::{ResourceList, ResourceType};
 use crate::Error;
-use image::dxt::{DxtEncoder, DXTVariant};
+use image::codecs::dxt::{DxtEncoder, DxtVariant};
 use image::{DynamicImage, GenericImageView};
 use std::io::Cursor;
 use std::vec::Vec;
@@ -123,7 +123,7 @@ impl<'a> VTF<'a> {
                     &image_data,
                     header.width as u32,
                     header.height as u32,
-                    DXTVariant::DXT5,
+                    DxtVariant::DXT5,
                 )?;
             }
             ImageFormat::Dxt1Onebitalpha => {
@@ -133,7 +133,7 @@ impl<'a> VTF<'a> {
                     &image_data,
                     header.width as u32,
                     header.height as u32,
-                    DXTVariant::DXT1,
+                    DxtVariant::DXT1,
                 )?;
             }
             ImageFormat::Rgba8888 => {
