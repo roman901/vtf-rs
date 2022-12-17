@@ -3,7 +3,7 @@ use crate::image::{ImageFormat, VTFImage};
 use crate::resources::{ResourceList, ResourceType};
 use crate::Error;
 use image::codecs::dxt::{DxtEncoder, DxtVariant};
-use image::{DynamicImage, GenericImageView};
+use image::{DynamicImage};
 use std::io::Cursor;
 use std::vec::Vec;
 

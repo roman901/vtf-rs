@@ -88,11 +88,8 @@ impl<'a> VTFImage<'a> {
                 let buf = self.decode_dxt(bytes, DxtVariant::DXT5)?;
                 self.image_from_buffer(buf, DynamicImage::ImageRgba8)
             }
-            ImageFormat::Rgba8888 => {
-                self.image_from_buffer(bytes.to_vec(), DynamicImage::ImageRgba8)
-            }
             ImageFormat::Rgba8888 => self.image_from_buffer(bytes.to_vec(), DynamicImage::ImageRgba8),
-            ImageFormat::Bgr888 => self.image_from_buffer(bytes.to_vec(), DynamicImage::ImageRgb8),
+            ImageFormat::Rgb888 => self.image_from_buffer(bytes.to_vec(), DynamicImage::ImageRgb8),
             _ => Err(Error::UnsupportedImageFormat(self.format)),
         }
     }
