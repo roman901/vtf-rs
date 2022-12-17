@@ -40,6 +40,6 @@ fn test_image(input: &str, expected: &str) {
 
 fn hash(image: DynamicImage) -> u64 {
     let mut hasher = DefaultHasher::new();
-    image.into_rgba().hash(&mut hasher);
+    image.into_rgba8().hash(&mut hasher);
     hasher.finish()
 }

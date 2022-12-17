@@ -1,8 +1,5 @@
 use std::env;
-use std::fs::File;
-use std::io::Read;
-use std::path::Path;
-use std::vec::Vec;
+use std::fs;
 use vtf::Error;
 
 fn main() -> Result<(), Error> {
@@ -12,10 +9,7 @@ fn main() -> Result<(), Error> {
         panic!("Usage: info <path to vtf file>");
     }
 
-    let path = Path::new(&args[1]);
-    let mut file = File::open(path)?;
-    let mut buf = Vec::new();
-    file.read_to_end(&mut buf)?;
+    let mut buf = fs::read(&args[1])?;
 
     let vtf = vtf::from_bytes(&mut buf)?;
 
