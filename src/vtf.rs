@@ -30,7 +30,7 @@ impl<'a> VTF<'a> {
 
         let highres_offset = match header
             .resources
-            .get_by_type(ResourceType::VTF_LEGACY_RSRC_LOW_RES_IMAGE)
+            .get_by_type(ResourceType::VTF_LEGACY_RSRC_IMAGE)
         {
             Some(resource) => resource.data,
             None => {
