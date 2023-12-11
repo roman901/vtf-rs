@@ -2,10 +2,10 @@ use crate::header::VTFHeader;
 use crate::image::{ImageFormat, VTFImage};
 use crate::resources::{ResourceList, ResourceType};
 use crate::Error;
-use image::dxt::{DxtEncoder, DXTVariant};
 use image::{DynamicImage, GenericImageView};
 use std::io::Cursor;
 use std::vec::Vec;
+use texpresso::{Format, Params};
 
 #[derive(Debug)]
 pub struct VTF<'a> {
@@ -30,7 +30,7 @@ impl<'a> VTF<'a> {
 
         let highres_offset = match header
             .resources
-            .get_by_type(ResourceType::VTF_LEGACY_RSRC_LOW_RES_IMAGE)
+            .get_by_type(ResourceType::VTF_LEGACY_RSRC_IMAGE)
         {
             Some(resource) => resource.data,
             None => {
@@ -115,26 +115,19 @@ impl<'a> VTF<'a> {
 
         data.resize(header_size, 0);
 
+        let width = header.width as usize;
+        let height = header.height as usize;
+
         match image_format {
             ImageFormat::Dxt5 => {
                 let image_data = image.to_rgba8();
-                let encoder = DxtEncoder::new(&mut data);
-                encoder.encode(
-                    &image_data,
-                    header.width as u32,
-                    header.height as u32,
-                    DXTVariant::DXT5,
-                )?;
+                data.resize(header_size + Format::Bc3.compressed_size(width, height), 0);
+                Format::Bc3.compress(image_data.as_raw(), width, height, Params::default(), &mut data[header_size..]);
             }
             ImageFormat::Dxt1Onebitalpha => {
                 let image_data = image.to_rgba8();
-                let encoder = DxtEncoder::new(&mut data);
-                encoder.encode(
-                    &image_data,
-                    header.width as u32,
-                    header.height as u32,
-                    DXTVariant::DXT1,
-                )?;
+                data.resize(header_size + Format::Bc1.compressed_size(width, height), 0);
+                Format::Bc1.compress(image_data.as_raw(), width, height, Params::default(), &mut data[header_size..]);
             }
             ImageFormat::Rgba8888 => {
                 let image_data = image.to_rgba8();
