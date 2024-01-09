@@ -122,12 +122,24 @@ impl<'a> VTF<'a> {
             ImageFormat::Dxt5 => {
                 let image_data = image.to_rgba8();
                 data.resize(header_size + Format::Bc3.compressed_size(width, height), 0);
-                Format::Bc3.compress(image_data.as_raw(), width, height, Params::default(), &mut data[header_size..]);
+                Format::Bc3.compress(
+                    image_data.as_raw(),
+                    width,
+                    height,
+                    Params::default(),
+                    &mut data[header_size..],
+                );
             }
             ImageFormat::Dxt1Onebitalpha => {
                 let image_data = image.to_rgba8();
                 data.resize(header_size + Format::Bc1.compressed_size(width, height), 0);
-                Format::Bc1.compress(image_data.as_raw(), width, height, Params::default(), &mut data[header_size..]);
+                Format::Bc1.compress(
+                    image_data.as_raw(),
+                    width,
+                    height,
+                    Params::default(),
+                    &mut data[header_size..],
+                );
             }
             ImageFormat::Rgba8888 => {
                 let image_data = image.to_rgba8();

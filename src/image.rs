@@ -48,7 +48,12 @@ impl<'a> VTFImage<'a> {
 
     fn decode_dxt(&self, bytes: &[u8], variant: Format) -> Result<Vec<u8>, Error> {
         let mut output: Vec<u8> = vec![0; self.width as usize * self.height as usize * 4];
-        variant.decompress(bytes, self.width as usize, self.height as usize, &mut output);
+        variant.decompress(
+            bytes,
+            self.width as usize,
+            self.height as usize,
+            &mut output,
+        );
         Ok(output)
     }
 
@@ -92,12 +97,12 @@ impl<'a> VTFImage<'a> {
             }
             ImageFormat::Rgb888 => self.image_from_buffer(bytes.to_vec(), DynamicImage::ImageRgb8),
             ImageFormat::Bgr888 => {
-                let mut bgra=bytes.to_vec();
+                let mut bgra = bytes.to_vec();
                 convert_bgra(&mut bgra);
                 self.image_from_buffer(bgra, DynamicImage::ImageRgb8)
-            },
+            }
             ImageFormat::Bgra8888 => {
-                let mut bgra=bytes.to_vec();
+                let mut bgra = bytes.to_vec();
                 convert_bgra(&mut bgra);
                 self.image_from_buffer(bgra, DynamicImage::ImageRgb8)
             }
@@ -107,7 +112,7 @@ impl<'a> VTFImage<'a> {
 }
 
 // https://github.com/image-rs/image/pull/1482#issuecomment-1402362448
-fn convert_bgra(bgra: &mut Vec<u8>){
+fn convert_bgra(bgra: &mut Vec<u8>) {
     for src in bgra.chunks_exact_mut(4) {
         let (blue, green, red, alpha) = (src[0], src[1], src[2], src[3]);
         src[0] = red;
