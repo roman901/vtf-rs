@@ -18,7 +18,7 @@ fn main() -> Result<(), Error> {
     let mut buf = Vec::new();
     file.read_to_end(&mut buf)?;
 
-    let vtf = vtf::from_bytes(&mut buf)?;
+    let vtf = vtf::from_bytes(&buf)?;
     let image = vtf.highres_image.decode(0)?;
 
     // rgb and rgba images we can save directly, for other formats we convert to rgba

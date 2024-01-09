@@ -17,7 +17,7 @@ fn main() -> Result<(), Error> {
     let mut buf = Vec::new();
     file.read_to_end(&mut buf)?;
 
-    let vtf = vtf::from_bytes(&mut buf)?;
+    let vtf = vtf::from_bytes(&buf)?;
 
     println!("{:#?}", vtf.header);
     Ok(())

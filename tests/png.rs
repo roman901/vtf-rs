@@ -28,7 +28,7 @@ fn test_image(input: &str, expected: &str) {
     let mut buf = Vec::new();
     file.read_to_end(&mut buf).unwrap();
 
-    let vtf = vtf::from_bytes(&mut buf).unwrap();
+    let vtf = vtf::from_bytes(&buf).unwrap();
     let image = vtf.highres_image.decode(0).unwrap();
 
     let expected = open(expected).unwrap();

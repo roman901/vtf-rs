@@ -17,7 +17,7 @@ fn main() -> Result<(), Error> {
 
     let path = Path::new(&args[2]);
     let mut file = File::create(path)?;
-    file.write(&vtf_data)?;
+    file.write_all(&vtf_data)?;
 
     Ok(())
 }

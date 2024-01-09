@@ -87,8 +87,7 @@ impl ResourceList {
     pub fn write(&self, bytes: &mut impl Write) -> Result<(), Error> {
         self.resources
             .iter()
-            .map(|resource| resource.write(bytes))
-            .collect::<Result<(), Error>>()
+            .try_for_each(|resource| resource.write(bytes))
     }
 
     pub fn get_by_type(&self, ty: ResourceType) -> Option<&Resource> {

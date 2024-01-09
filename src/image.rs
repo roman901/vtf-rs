@@ -112,7 +112,7 @@ impl<'a> VTFImage<'a> {
 }
 
 // https://github.com/image-rs/image/pull/1482#issuecomment-1402362448
-fn convert_bgra(bgra: &mut Vec<u8>) {
+fn convert_bgra(bgra: &mut [u8]) {
     for src in bgra.chunks_exact_mut(4) {
         let (blue, green, red, alpha) = (src[0], src[1], src[2], src[3]);
         src[0] = red;
@@ -164,7 +164,7 @@ impl ImageFormat {
             ImageFormat::Rgb888 => Ok(width * height * 3),
             ImageFormat::Bgr888 => Ok(width * height * 3),
             ImageFormat::Rgb565 => Ok(width * height * 2),
-            ImageFormat::I8 => Ok(width * height * 1),
+            ImageFormat::I8 => Ok(width * height),
             ImageFormat::Ia88 => Ok(width * height * 2),
             ImageFormat::A8 => Ok(width * height),
             ImageFormat::Argb8888 => Ok(width * height * 4),

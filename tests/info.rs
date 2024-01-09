@@ -9,7 +9,7 @@ fn test_info() {
     let mut buf = Vec::new();
     file.read_to_end(&mut buf).unwrap();
 
-    let vtf = vtf::from_bytes(&mut buf).unwrap();
+    let vtf = vtf::from_bytes(&buf).unwrap();
 
     assert_eq!(512, vtf.header.width);
     assert_eq!(512, vtf.header.height);
@@ -22,7 +22,7 @@ fn test_write_header() {
     let mut buf = Vec::new();
     file.read_to_end(&mut buf).unwrap();
 
-    let vtf = vtf::from_bytes(&mut buf).unwrap();
+    let vtf = vtf::from_bytes(&buf).unwrap();
 
     let mut written = Vec::new();
     vtf.header.write(&mut written).unwrap();
