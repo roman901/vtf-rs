@@ -1,12 +1,12 @@
 [package]
 name = "vtf"
 description = "Valve Texture format library for Rust"
-version = "0.1.6"
+version = "0.2.0"
 license = "MIT"
 authors = ["Roman Shishkin <spark@uwtech.org>", "Robin Appelman <robin@icewind.nl>"]
 repository = "https://github.com/roman901/vtf-rs"
 edition = "2018"
-rust-version = "1.60"
+rust-version = "1.67.0"
 
 [dependencies]
 image = "0.24.7"
