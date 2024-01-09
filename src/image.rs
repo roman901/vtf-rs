@@ -91,12 +91,29 @@ impl<'a> VTFImage<'a> {
                 self.image_from_buffer(bytes.to_vec(), DynamicImage::ImageRgba8)
             }
             ImageFormat::Rgb888 => self.image_from_buffer(bytes.to_vec(), DynamicImage::ImageRgb8),
-            ImageFormat::Bgr888 => self.image_from_buffer(bytes.to_vec(), DynamicImage::ImageBgr8),
+            ImageFormat::Bgr888 => {
+                let mut bgra=bytes.to_vec();
+                convert_bgra(&mut bgra);
+                self.image_from_buffer(bgra, DynamicImage::ImageRgb8)
+            },
             ImageFormat::Bgra8888 => {
-                self.image_from_buffer(bytes.to_vec(), DynamicImage::ImageBgra8)
+                let mut bgra=bytes.to_vec();
+                convert_bgra(&mut bgra);
+                self.image_from_buffer(bgra, DynamicImage::ImageRgb8)
             }
             _ => Err(Error::UnsupportedImageFormat(self.format)),
         }
+    }
+}
+
+// https://github.com/image-rs/image/pull/1482#issuecomment-1402362448
+fn convert_bgra(bgra: &mut Vec<u8>){
+    for src in bgra.chunks_exact_mut(4) {
+        let (blue, green, red, alpha) = (src[0], src[1], src[2], src[3]);
+        src[0] = red;
+        src[1] = green;
+        src[2] = blue;
+        src[3] = alpha;
     }
 }
 
