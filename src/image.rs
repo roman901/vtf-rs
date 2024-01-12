@@ -170,6 +170,7 @@ impl ImageFormat {
             ImageFormat::Argb8888 => Ok(width * height * 4),
             ImageFormat::Bgra8888 => Ok(width * height * 4),
             ImageFormat::Dxt1 => Ok(((width + 3) / 4) * ((height + 3) / 4) * 8),
+            ImageFormat::Dxt3 => Ok(((width + 3) / 4) * ((height + 3) / 4) * 16),
             ImageFormat::Dxt5 => Ok(((width + 3) / 4) * ((height + 3) / 4) * 16),
             ImageFormat::Rgba16161616f => Ok(width * height * 8),
             ImageFormat::Rgba16161616 => Ok(width * height * 8),
