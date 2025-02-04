@@ -16,7 +16,7 @@ pub struct VTF<'a> {
 
 impl<'a> VTF<'a> {
     pub fn read(bytes: &'a Vec<u8>) -> Result<VTF, Error> {
-        let mut cursor = Cursor::new(&bytes);
+        let mut cursor = Cursor::new(bytes);
 
         let header = VTFHeader::read(&mut cursor)?;
 
