@@ -24,7 +24,7 @@ impl<'a> VTFImage<'a> {
         format: ImageFormat,
         width: u16,
         height: u16,
-        bytes: &'a Vec<u8>,
+        bytes: &'a [u8],
         offset: usize,
     ) -> VTFImage<'a> {
         VTFImage {
