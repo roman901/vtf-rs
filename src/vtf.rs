@@ -2,7 +2,7 @@ use crate::header::VTFHeader;
 use crate::image::{ImageFormat, VTFImage};
 use crate::resources::{ResourceList, ResourceType};
 use crate::Error;
-use image::{DynamicImage};
+use image::DynamicImage;
 use std::io::Cursor;
 use std::vec::Vec;
 use texpresso::{Format, Params};
