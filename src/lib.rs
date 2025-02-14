@@ -36,7 +36,7 @@ impl From<TryFromPrimitiveError<image::ImageFormat>> for Error {
     }
 }
 
-pub fn from_bytes(bytes: &Vec<u8>) -> Result<VTF, Error> {
+pub fn from_bytes(bytes: &[u8]) -> Result<VTF, Error> {
     VTF::read(bytes)
 }
 
