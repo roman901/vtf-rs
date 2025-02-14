@@ -7,26 +7,26 @@ pub mod vtf;
 pub use crate::image::ImageFormat;
 use crate::vtf::VTF;
 use ::image::DynamicImage;
-use err_derive::Error;
 use num_enum::TryFromPrimitiveError;
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error(display = "IO error: {}", _0)]
-    Io(#[error(source)] std::io::Error),
-    #[error(display = "File does not have a valid vtf signature")]
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("File does not have a valid vtf signature")]
     InvalidSignature,
-    #[error(display = "File does not have a valid vtf image format: {}", _0)]
+    #[error("File does not have a valid vtf image format: {0}")]
     InvalidImageFormat(i16),
-    #[error(display = "Error manipulating image data: {}", _0)]
-    Image(#[error(source)] ::image::ImageError),
-    #[error(display = "Decoding {} images is not supported", _0)]
+    #[error("Error manipulating image data: {0}")]
+    Image(#[from] ::image::ImageError),
+    #[error("Decoding {0} images is not supported")]
     UnsupportedImageFormat(ImageFormat),
-    #[error(display = "Decoded image data does not have the expected size")]
+    #[error("Decoded image data does not have the expected size")]
     InvalidImageData,
-    #[error(display = "Image size needs to be a power of 2 and below 2^16")]
+    #[error("Image size needs to be a power of 2 and below 2^16")]
     InvalidImageSize,
-    #[error(display = "Encoding {} images is not supported", _0)]
+    #[error("Encoding {0} images is not supported")]
     UnsupportedEncodeImageFormat(ImageFormat),
 }
 
