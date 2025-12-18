@@ -1,3 +1,4 @@
+use crate::builder::VTFBuilder;
 use crate::header::VTFHeader;
 use crate::image::{ImageFormat, VTFImage};
 use crate::resources::{ResourceList, ResourceType};
@@ -15,6 +16,10 @@ pub struct VTF<'a> {
 }
 
 impl<'a> VTF<'a> {
+    pub fn create_animated(image_format: ImageFormat) -> VTFBuilder {
+        VTFBuilder::new(image_format)
+    }
+
     pub fn read(bytes: &'a [u8]) -> Result<VTF<'a>, Error> {
         let mut cursor = Cursor::new(bytes);
 
@@ -67,14 +72,12 @@ impl<'a> VTF<'a> {
         })
     }
 
-    pub fn create(image: DynamicImage, image_format: ImageFormat) -> Result<Vec<u8>, Error> {
-        if !image.width().is_power_of_two()
-            || !image.height().is_power_of_two()
-            || image.width() > u16::MAX as u32
-            || image.height() > u16::MAX as u32
-        {
-            return Err(Error::InvalidImageSize);
+    pub(crate) fn encode(frames: &[DynamicImage], image_format: ImageFormat, first_frame: u16) -> Result<Vec<u8>, Error> {
+        if frames.len() > u16::MAX as usize {
+            return Err(Error::TooManyFrames);
         }
+
+        let image = &frames[0];
 
         let header = VTFHeader {
             signature: VTFHeader::SIGNATURE,
@@ -83,8 +86,8 @@ impl<'a> VTF<'a> {
             width: image.width() as u16,
             height: image.height() as u16,
             flags: 8972,
-            frames: 1,
-            first_frame: 0,
+            frames: frames.len() as u16,
+            first_frame,
             reflectivity: [0.0, 0.0, 0.0],
             bumpmap_scale: 1.0,
             highres_image_format: image_format,
@@ -118,40 +121,46 @@ impl<'a> VTF<'a> {
         let width = header.width as usize;
         let height = header.height as usize;
 
-        match image_format {
-            ImageFormat::Dxt5 => {
-                let image_data = image.to_rgba8();
-                data.resize(header_size + Format::Bc3.compressed_size(width, height), 0);
-                Format::Bc3.compress(
-                    image_data.as_raw(),
-                    width,
-                    height,
-                    Params::default(),
-                    &mut data[header_size..],
-                );
+        for image in frames {
+            match image_format {
+                ImageFormat::Dxt5 => {
+                    let image_data = image.to_rgba8();
+                    data.resize(header_size + Format::Bc3.compressed_size(width, height), 0);
+                    Format::Bc3.compress(
+                        image_data.as_raw(),
+                        width,
+                        height,
+                        Params::default(),
+                        &mut data[header_size..],
+                    );
+                }
+                ImageFormat::Dxt1Onebitalpha => {
+                    let image_data = image.to_rgba8();
+                    data.resize(header_size + Format::Bc1.compressed_size(width, height), 0);
+                    Format::Bc1.compress(
+                        image_data.as_raw(),
+                        width,
+                        height,
+                        Params::default(),
+                        &mut data[header_size..],
+                    );
+                }
+                ImageFormat::Rgba8888 => {
+                    let image_data = image.to_rgba8();
+                    data.extend_from_slice(&image_data);
+                }
+                ImageFormat::Rgb888 => {
+                    let image_data = image.to_rgb8();
+                    data.extend_from_slice(&image_data);
+                }
+                _ => return Err(Error::UnsupportedEncodeImageFormat(image_format)),
             }
-            ImageFormat::Dxt1Onebitalpha => {
-                let image_data = image.to_rgba8();
-                data.resize(header_size + Format::Bc1.compressed_size(width, height), 0);
-                Format::Bc1.compress(
-                    image_data.as_raw(),
-                    width,
-                    height,
-                    Params::default(),
-                    &mut data[header_size..],
-                );
-            }
-            ImageFormat::Rgba8888 => {
-                let image_data = image.to_rgba8();
-                data.extend_from_slice(&image_data);
-            }
-            ImageFormat::Rgb888 => {
-                let image_data = image.to_rgb8();
-                data.extend_from_slice(&image_data);
-            }
-            _ => return Err(Error::UnsupportedEncodeImageFormat(image_format)),
         }
 
         Ok(data)
+    }
+
+    pub fn create(image: DynamicImage, image_format: ImageFormat) -> Result<Vec<u8>, Error> {
+        Self::encode(&[image], image_format, 0)
     }
 }
