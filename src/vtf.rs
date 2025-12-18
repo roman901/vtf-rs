@@ -161,6 +161,14 @@ impl<'a> VTF<'a> {
     }
 
     pub fn create(image: DynamicImage, image_format: ImageFormat) -> Result<Vec<u8>, Error> {
+        if !image.width().is_power_of_two()
+            || !image.height().is_power_of_two()
+            || image.width() > u16::MAX as u32
+            || image.height() > u16::MAX as u32
+        {
+            return Err(Error::InvalidImageSize);
+        }
+
         Self::encode(&[image], image_format, 0)
     }
 }
