@@ -116,42 +116,57 @@ impl<'a> VTF<'a> {
         let header_size = header.size();
         assert!(data.len() <= header_size, "invalid header size");
 
-        data.resize(header_size, 0);
-
         let width = header.width as usize;
         let height = header.height as usize;
+
+        let frame_size = match image_format {
+            ImageFormat::Dxt5 => Format::Bc3.compressed_size(width, height),
+            ImageFormat::Dxt1Onebitalpha => Format::Bc1.compressed_size(width, height),
+            ImageFormat::Rgba8888 => width * height * 4,
+            ImageFormat::Rgb888 => width * height * 3,
+            _ => return Err(Error::UnsupportedEncodeImageFormat(image_format)),
+        };
+
+        data.resize(
+            header_size + frame_size * frames.len(),
+            0,
+        );
+
+        let mut output = &mut data[header_size..];
 
         for image in frames {
             match image_format {
                 ImageFormat::Dxt5 => {
                     let image_data = image.to_rgba8();
-                    data.resize(header_size + Format::Bc3.compressed_size(width, height), 0);
                     Format::Bc3.compress(
                         image_data.as_raw(),
                         width,
                         height,
                         Params::default(),
-                        &mut data[header_size..],
+                        output,
                     );
+                    output = &mut output[frame_size..];
                 }
                 ImageFormat::Dxt1Onebitalpha => {
                     let image_data = image.to_rgba8();
-                    data.resize(header_size + Format::Bc1.compressed_size(width, height), 0);
                     Format::Bc1.compress(
                         image_data.as_raw(),
                         width,
                         height,
                         Params::default(),
-                        &mut data[header_size..],
+                        output,
                     );
+                    output = &mut output[frame_size..];
                 }
                 ImageFormat::Rgba8888 => {
                     let image_data = image.to_rgba8();
-                    data.extend_from_slice(&image_data);
+                    output[..frame_size].copy_from_slice(&image_data);
+                    output = &mut output[frame_size..];
                 }
                 ImageFormat::Rgb888 => {
                     let image_data = image.to_rgb8();
-                    data.extend_from_slice(&image_data);
+                    output[..frame_size].copy_from_slice(&image_data);
+                    output = &mut output[frame_size..];
                 }
                 _ => return Err(Error::UnsupportedEncodeImageFormat(image_format)),
             }
