@@ -3,9 +3,10 @@ pub mod image;
 pub mod resources;
 mod utils;
 pub mod vtf;
+pub mod builder;
 
 pub use crate::image::ImageFormat;
-use crate::vtf::VTF;
+use crate::{builder::VTFBuilder, vtf::VTF};
 use ::image::DynamicImage;
 use num_enum::TryFromPrimitiveError;
 use thiserror::Error;
@@ -28,6 +29,14 @@ pub enum Error {
     InvalidImageSize,
     #[error("Encoding {0} images is not supported")]
     UnsupportedEncodeImageFormat(ImageFormat),
+    #[error("Mismatched frame dimensions")]
+    MismatchedFrameDimensions,
+    #[error("Maximum number of frames exceeded")]
+    TooManyFrames,
+    #[error("No frames provided")]
+    NoFrames,
+    #[error("First frame index is out of bounds")]
+    InvalidFirstFrame,
 }
 
 impl From<TryFromPrimitiveError<image::ImageFormat>> for Error {
@@ -42,4 +51,8 @@ pub fn from_bytes(bytes: &[u8]) -> Result<VTF<'_>, Error> {
 
 pub fn create(image: DynamicImage, image_format: ImageFormat) -> Result<Vec<u8>, Error> {
     VTF::create(image, image_format)
+}
+
+pub fn create_animated(image_format: ImageFormat) -> VTFBuilder {
+    VTFBuilder::new(image_format)
 }
